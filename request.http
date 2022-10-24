@@ -1,0 +1,99 @@
+@token = {{login.response.body.token}}
+@host = http://localhost:3001
+
+### Create Food
+
+POST {{host}}/foods
+Authorization: bearer {{token}}
+Content-Type: multipart/form-data; boundary="boundary"
+
+--boundary
+Content-Disposition: form-data; name="name"
+
+Arroz
+--boundary
+Content-Disposition: form-data; name="quantidade"
+
+5
+--boundary
+Content-Disposition: form-data; name="category_id"
+
+2
+--boundary
+Content-Disposition: form-data; name="image"; filename="arroz.jpg"
+Content-Type: image/jpeg
+
+< ./public/imgs/foods/arroz.jpg
+--boundary--
+
+### Read Foods
+
+GET {{host}}/foods
+Authorization: bearer {{token}}
+
+### Update Food
+
+PUT {{host}}/foods/3
+Authorization: bearer {{token}}
+Content-Type: multipart/form-data; boundary="boundary"
+
+--boundary
+Content-Disposition: form-data; name="name"
+
+Arroz
+--boundary
+Content-Disposition: form-data; name="price"
+
+5
+--boundary
+Content-Disposition: form-data; name="category_id"
+
+2
+--boundary
+Content-Disposition: form-data; name="image"; filename="arroz.jpg"
+Content-Type: image/jpeg
+
+< ./public/imgs/foods/arroz.jpg
+--boundary--
+
+### Delete Food
+
+DELETE {{host}}/foods/4
+Authorization: bearer {{token}}
+
+### Read Categories
+
+GET {{host}}/categories
+Authorization: bearer {{token}}
+
+### Create User
+
+POST {{host}}/users
+Content-Type: application/json
+
+{
+    "name": "mayara",
+    "email": "mayara1@gmail.com",
+    "password": "12345"
+}
+
+### Valid Login
+
+# @name login
+POST {{host}}/signin
+Content-Type: application/json
+
+{
+    "email": "mayara1@gmail.com",
+    "password": "12345"
+}
+
+### Invalid Login
+
+POST {{host}}/signin
+Content-Type: application/json
+
+{
+    "email": "mateus@email.com",
+    "password": "123"
+} 

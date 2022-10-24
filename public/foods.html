@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css"
+      integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi"
+      crossorigin="anonymous"
+       >
+  </head>
+    <title>LISTA DE COMPRAS</title>
+    <style>
+      .card-header span:hover {
+        cursor: pointer;
+      }
+      
+      body {
+        font-size: 25px; 
+        color: red;
+      }
+    </style>
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+      <div class="container">
+        <a class="navbar-brand" href="#">Foods App</a>
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarSupportedContent"
+          aria-controls="navbarSupportedContent"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+          <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+            <li class="nav-item">
+              <a class="nav-link active" aria-current="page" href="/foods.html"
+                >Home</a
+              >
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#" onclick="signout()">Sair</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+    <div class="container">
+      <h1 class="text-center my-5">LISTA DE COMPRAS</h1>
+      <form class="row my-5 justify-content-center">
+        <div class="row col-auto">
+          <div class="col-auto">
+            <label for="name" class="form-label mb-0 align-middle lh-lg"
+              >Alimento</label
+            >
+          </div>
+          <div class="col-auto">
+            <input type="text" class="form-control" id="name" name="name" />
+          </div>
+        </div>
+        <div class="row col-auto">
+          <div class="col-auto">
+            <label for="price" class="form-label mb-0 align-middle lh-lg"
+              >Quantidade</label
+            >
+          </div>
+          <div class="col-auto">
+            <input type="text" class="form-control" id="price" name="quantidade" />
+          </div>
+        </div>
+        <div class="row col-auto">
+          <div class="col-auto">
+            <label for="category" class="form-label mb-0 align-middle lh-lg"
+              >Category</label
+            >
+          </div>
+          <div class="col-auto">
+            <select
+              class="form-control"
+              id="category"
+              name="category_id"
+            ></select>
+          </div>
+        </div>
+        <div class="col-auto">
+          <input type="submit" class="btn btn-primary" value="Cadastrar" />
+        </div>
+      </form>
+      <main class="row row-cols-1 row-cols-md-3 g-4"></main>
+    </div>
+    <script
+         src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-OERcA2EqjJCMA+/3y+gxIOqMEjwtxJY7qPCqsdltbNJuaOe923+mo//f6V8Qbsw3"
+      crossorigin="anonymous"
+    ></script>
+    <script type="module">
+      import Auth from './js/auth.js';
+
+      window.destroyFood = destroyFood;
+      window.signout = Auth.signout;
+
+      const form = document.querySelector('form');
+      const main = document.querySelector('main');
+
+      if (Auth.isAuthenticated()) {
+        loadFoods();
+        loadCategories();
+      }
+
+      form.onsubmit = async (event) => {
+        event.preventDefault();
+
+         const food = new FormData(form);
+
+       const newFood = await createFoodData(food);
+
+        createFoodView(newFood);
+
+        form.reset();
+      };
+
+       async function createFoodData(food) {
+        const url = '/foods';
+
+        const config = {
+          method: 'post',
+          body: food,
+          headers: {
+            Authorization: `Bearer ${Auth.getToken()}`,
+          },
+        };
+
+        const newFood = await (await fetch(url, config)).json();
+
+        return newFood;
+      }
+
+
+      function createFoodView(food) {
+        const view = `<div class="col" id="food-${food.id}">
+        <div class="food card">
+          <div class="card-header align-middle lh-base text-center fw-bold">
+            ${food.name}
+            <span
+              class="material-icons-outlined float-end"
+              onclick="destroyFood(${food.id})"
+            >
+              delete
+            </span>
+          </div>
+          <div class="card-body p-0">
+            <img src="${food.image}" class="w-100" alt="${food.name}" />
+          </div>
+          <div class="card-footer d-flex justify-content-between">
+            <span class="badge bg-secondary">${food.category}</span>
+            <span>
+             ${food.quantidade}
+            </span>
+            </div>
+          </div>
+        </div>
+      </div>`;
+
+        main.insertAdjacentHTML('afterbegin', view);
+      }
+
+      async function loadFoods() {
+        const url = '/foods';
+
+        const config = {
+          method: 'get',
+          headers: {
+            Authorization: `Bearer ${Auth.getToken()}`,
+          },
+        };
+
+        const foods = await (await fetch(url, config)).json();
+
+        for (const food of foods) {
+          createFoodView(food);
+        }
+      }
+
+      async function loadCategories() {
+        const select = document.querySelector('#category');
+
+        const url = '/categories';
+
+        const config = {
+          method: 'get',
+          headers: {
+            Authorization: `Bearer ${Auth.getToken()}`,
+          },
+        };
+
+        const categories = await (await fetch(url, config)).json();
+
+        for (const category of categories) {
+          const option = `<option value="${category.id}">${category.name}</option>`;
+
+          select.insertAdjacentHTML('afterbegin', option);
+        }
+      }
+
+      function destroyFood(id) {
+        const removeFood = confirm('Deseja realmente remover da lista?');
+
+       if(removeFood) {
+          const url = `/foods/${id}`;
+
+        const config = {
+            method: 'delete',
+            headers: {
+              Authorization: `Bearer ${Auth.getToken()}`,
+            },
+          };
+
+         fetch(url, config);
+
+        document.querySelector(`#food-${id}`).remove();
+        }
+      }
+    </script>
+    
+    <HTML>
+  
+  
+  <BODY background="https://s2.glbimg.com/ugaKtHz0ImRceWnsIx643Sq3GrA=/e.glbimg.com/og/ed/f/original/2022/02/24/shopping-gcd9c8c838_1920.jpg">
+  <P align="right"> </P>
+  </body> 
+</html>
